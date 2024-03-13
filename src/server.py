@@ -74,7 +74,7 @@ class CreatePermalink(Resource):
         tenant = tenant_handler.tenant()
         config = config_handler.tenant_config(tenant)
         self.default_expiry_period = config.get('default_expiry_period', None)
-
+        
         state = request.json
         if "url" in state:
             url = state["url"]
@@ -83,6 +83,13 @@ class CreatePermalink(Resource):
             url = args['url']
         else:
             api.abort(400, "No URL specified")
+
+        expiry_period = self.default_expiry_period
+        if "expiry_period" in state:
+            expiry_period = state["expiry_period"]
+            del state["expiry_period"]
+        elif "expiry_period" in args:
+            expiry_period = args['expiry_period']
 
         parts = urlparse(url)
         query = parse_qs(parts.query, keep_blank_values=True)
@@ -99,8 +106,8 @@ class CreatePermalink(Resource):
         hexdigest = hashlib.sha224((datastr + str(time.time())).encode('utf-8')).hexdigest()[0:9]
         date = datetime.date.today().strftime(r"%Y-%m-%d")
         expires = None
-        if self.default_expiry_period:
-            delta = datetime.timedelta(days=self.default_expiry_period)
+        if expiry_period:
+            delta = datetime.timedelta(days=expiry_period)
             expires = (datetime.date.today() + delta).strftime(r"%Y-%m-%d")
 
         sql = sql_text("""
