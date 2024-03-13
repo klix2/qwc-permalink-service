@@ -74,7 +74,7 @@ class CreatePermalink(Resource):
         tenant = tenant_handler.tenant()
         config = config_handler.tenant_config(tenant)
         self.default_expiry_period = config.get('default_expiry_period', None)
-        
+
         state = request.json
         if "url" in state:
             url = state["url"]
